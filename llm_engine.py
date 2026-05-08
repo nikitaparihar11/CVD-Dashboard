@@ -1,8 +1,9 @@
 from groq import Groq
 import re
 
-client = Groq(api_key="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")
+import streamlit as st
 
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 # ===============================
 # LANGUAGE CONTROL
 # ===============================
