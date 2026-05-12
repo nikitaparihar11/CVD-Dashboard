@@ -32,6 +32,7 @@ from voice_engine import transcribe_audio
 from lang_engine import detect_language
 
 from auth import require_auth
+
 # ───────────────────────────────────────────────
 # PAGE CONFIG
 # ───────────────────────────────────────────────
@@ -42,198 +43,436 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 require_auth()
+
 # ───────────────────────────────────────────────
-# GLOBAL CSS
+# GLOBAL CSS — SOFT BLUE-GREY LIGHT MEDICAL THEME
 # ───────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'DM Sans', sans-serif;
+/* ── ROOT TOKENS ── */
+:root {
+    --bg-base:         #eef1f6;
+    --bg-surface:      #f5f7fb;
+    --bg-card:         #ffffff;
+    --bg-sidebar:      #f0f3f9;
+    --border:          #d4dce9;
+    --border-strong:   #b8c5d6;
+    --text-primary:    #1a2535;
+    --text-secondary:  #4a607a;
+    --text-muted:      #8a9db5;
+    --accent-blue:     #2563eb;
+    --accent-teal:     #0891b2;
+    --accent-green:    #059669;
+    --accent-amber:    #d97706;
+    --accent-red:      #dc2626;
+    --accent-purple:   #7c3aed;
+    --shadow-sm:       0 1px 3px rgba(30,60,100,0.08), 0 1px 2px rgba(30,60,100,0.05);
+    --shadow-md:       0 4px 12px rgba(30,60,100,0.10), 0 2px 4px rgba(30,60,100,0.06);
+    --radius:          12px;
+    --font-ui:         'Plus Jakarta Sans', sans-serif;
+    --font-mono:       'JetBrains Mono', monospace;
 }
 
-.main { background: #080c14; }
-section[data-testid="stSidebar"] { background: #0c111c !important; border-right: 1px solid #1a2235; }
+/* ── GLOBAL RESET ── */
+html, body,
+.stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+.main,
+.block-container {
+    background-color: var(--bg-base) !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-ui) !important;
+}
+.block-container {
+    padding-top: 1.5rem !important;
+    max-width: 1400px !important;
+}
 
+/* ── SIDEBAR ── */
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] > div,
+[data-testid="stSidebarContent"] {
+    background-color: var(--bg-sidebar) !important;
+    border-right: 1px solid var(--border) !important;
+}
+[data-testid="stSidebar"] .stMarkdown p,
+[data-testid="stSidebar"] .stMarkdown li,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] p {
+    color: var(--text-secondary) !important;
+    font-family: var(--font-ui) !important;
+}
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    font-family: var(--font-ui) !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    color: var(--accent-blue) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    margin-top: 20px !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 5px !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+[data-testid="stSidebar"] hr {
+    border-color: var(--border) !important;
+    margin: 10px 0 !important;
+}
+[data-testid="stSidebar"] label {
+    font-size: 0.77rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* ── TABS ── */
+div[data-testid="stTabs"] > div:first-child {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    gap: 2px;
+    box-shadow: var(--shadow-sm);
+}
+button[data-baseweb="tab"] {
+    font-family: var(--font-ui) !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+    color: var(--text-muted) !important;
+    background: transparent !important;
+    border-radius: 7px !important;
+    padding: 8px 22px !important;
+    transition: all 0.18s ease !important;
+    border: none !important;
+}
+button[data-baseweb="tab"]:hover {
+    color: var(--accent-blue) !important;
+    background: #eff6ff !important;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+    background: var(--accent-blue) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.25) !important;
+}
+div[data-testid="stTabs"] > div:nth-child(2) {
+    border-top: none !important;
+    padding-top: 18px !important;
+}
+
+/* ── NATIVE STREAMLIT WIDGETS ── */
+[data-testid="stSlider"] [data-baseweb="slider"] div[role="slider"] {
+    background-color: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.18) !important;
+}
+[data-testid="stSelectbox"] > div > div {
+    background: var(--bg-card) !important;
+    border-color: var(--border-strong) !important;
+    border-radius: 8px !important;
+    color: var(--text-primary) !important;
+    font-size: 0.85rem !important;
+}
+[data-testid="stSelectbox"] > div > div:focus-within {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.18) !important;
+}
+.stButton > button {
+    background: var(--bg-card) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-strong) !important;
+    border-radius: 8px !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+    padding: 8px 16px !important;
+    transition: all 0.15s !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+.stButton > button:hover {
+    background: #eff6ff !important;
+    border-color: var(--accent-blue) !important;
+    color: var(--accent-blue) !important;
+}
+[data-testid="stChatInput"] textarea {
+    background: var(--bg-card) !important;
+    border-color: var(--border-strong) !important;
+    border-radius: 10px !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-ui) !important;
+}
+[data-testid="stChatInput"] textarea:focus {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.15) !important;
+}
+[data-testid="stChatMessage"] {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    box-shadow: var(--shadow-sm) !important;
+    color: var(--text-primary) !important;
+}
+[data-testid="stExpander"] {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+}
+[data-testid="stExpander"] summary {
+    font-weight: 600 !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.84rem !important;
+    background: var(--bg-surface) !important;
+    padding: 12px 16px !important;
+}
+
+/* ── MARKDOWN TABLES ── */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+th {
+    background: var(--bg-surface) !important;
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+    padding: 9px 12px !important;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+}
+td {
+    padding: 8px 12px !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--bg-surface);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-surface) !important; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+/* ════════════════════════════════════
+   COMPONENT CLASSES
+   ════════════════════════════════════ */
+
+/* Banner */
 .hub-banner {
-    background: linear-gradient(135deg, #0f1e36 0%, #12243f 60%, #0f1e36 100%);
-    border: 1px solid #1e3a5f;
-    border-radius: 16px;
-    padding: 24px 32px;
-    margin-bottom: 20px;
+    background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 45%, #0369a1 100%);
+    border-radius: 14px;
+    padding: 26px 32px;
+    margin-bottom: 22px;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 6px 24px rgba(37,99,235,0.22);
 }
 .hub-banner::before {
     content: '';
-    position: absolute; top: -40px; right: -40px;
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(220,38,38,0.15) 0%, transparent 70%);
+    position: absolute; top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
     border-radius: 50%;
 }
+.hub-banner::after {
+    content: '';
+    position: absolute; bottom: -40px; left: 30%;
+    width: 300px; height: 100px;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.06) 0%, transparent 70%);
+}
 .hub-banner h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.9rem; font-weight: 800;
-    color: #f0f4ff; margin: 0 0 4px;
-    letter-spacing: -0.5px;
+    font-family: var(--font-ui);
+    font-size: 1.75rem; font-weight: 800;
+    color: #ffffff; margin: 0 0 4px;
+    letter-spacing: -0.3px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
-.hub-banner p { color: #6b8aad; margin: 0; font-size: 0.9rem; }
+.hub-banner p {
+    color: rgba(255,255,255,0.72);
+    margin: 0; font-size: 0.87rem; line-height: 1.6;
+}
+.hub-banner .banner-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.15); backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px; padding: 3px 12px;
+    font-size: 0.72rem; font-weight: 600; color: #fff;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    margin-bottom: 10px;
+}
 
-div[data-testid="stTabs"] > div:first-child {
-    background: #0c111c;
-    border-radius: 12px;
-    padding: 4px;
-    border: 1px solid #1a2235;
-    gap: 2px;
-}
-button[data-baseweb="tab"] {
-    font-family: 'Syne', sans-serif !important;
-    font-weight: 600 !important;
-    font-size: 0.82rem !important;
-    color: #4a6285 !important;
-    background: transparent !important;
-    border-radius: 8px !important;
-    padding: 8px 20px !important;
-    transition: all 0.2s !important;
-}
-button[data-baseweb="tab"][aria-selected="true"] {
-    background: #1a2f50 !important;
-    color: #60a5fa !important;
-}
-div[data-testid="stTabs"] > div:nth-child(2) { border-top: none !important; }
-
+/* KPI Cards */
 .kpi-card {
-    background: #0d1625;
-    border: 1px solid #1a2d4a;
-    border-radius: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 18px 20px;
     text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s, transform 0.2s;
     position: relative;
     overflow: hidden;
-    transition: border-color 0.2s;
 }
-.kpi-card:hover { border-color: #2a4a7a; }
+.kpi-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+.kpi-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+.kpi-danger::before  { background: var(--accent-red); }
+.kpi-warning::before { background: var(--accent-amber); }
+.kpi-success::before { background: var(--accent-green); }
+.kpi-info::before    { background: var(--accent-blue); }
 .kpi-card .kpi-label {
-    font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em;
-    text-transform: uppercase; color: #4a6285; margin-bottom: 8px;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
 }
 .kpi-card .kpi-value {
-    font-family: 'Syne', sans-serif;
+    font-family: var(--font-ui);
     font-size: 2rem; font-weight: 800; line-height: 1;
 }
-.kpi-card .kpi-sub { font-size: 0.75rem; color: #4a6285; margin-top: 4px; }
-.kpi-danger  .kpi-value { color: #ef4444; }
-.kpi-warning .kpi-value { color: #f59e0b; }
-.kpi-success .kpi-value { color: #22c55e; }
-.kpi-info    .kpi-value { color: #60a5fa; }
+.kpi-card .kpi-sub { font-size: 0.74rem; color: var(--text-muted); margin-top: 5px; }
+.kpi-danger  .kpi-value { color: var(--accent-red); }
+.kpi-warning .kpi-value { color: var(--accent-amber); }
+.kpi-success .kpi-value { color: var(--accent-green); }
+.kpi-info    .kpi-value { color: var(--accent-blue); }
 
+/* Section Cards */
 .sec-card {
-    background: #0d1625;
-    border: 1px solid #1a2d4a;
-    border-radius: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 20px 22px;
     margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
 }
 .sec-card h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.95rem; font-weight: 700;
-    color: #c9d9f0; margin: 0 0 14px;
-    letter-spacing: 0.02em;
+    font-family: var(--font-ui);
+    font-size: 0.88rem; font-weight: 700;
+    color: var(--text-primary); margin: 0 0 14px;
+    letter-spacing: 0.01em;
+    display: flex; align-items: center; gap: 7px;
+}
+.sec-card h3::before {
+    content: '';
+    display: inline-block; width: 3px; height: 14px;
+    background: var(--accent-blue);
+    border-radius: 2px;
+    flex-shrink: 0;
 }
 
+/* Alert Boxes */
 .info-box {
-    background: rgba(96,165,250,0.07);
-    border-left: 3px solid #3b82f6;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-left: 3px solid var(--accent-blue);
     border-radius: 0 8px 8px 0;
-    padding: 12px 16px; font-size: 0.84rem;
-    color: #93bbdf; line-height: 1.6;
-    margin: 8px 0;
+    padding: 11px 15px; font-size: 0.83rem;
+    color: #1e40af; line-height: 1.6; margin: 8px 0;
 }
 .warn-box {
-    background: rgba(239,68,68,0.07);
-    border-left: 3px solid #ef4444;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 3px solid var(--accent-red);
     border-radius: 0 8px 8px 0;
-    padding: 12px 16px; font-size: 0.84rem;
-    color: #fca5a5; line-height: 1.6;
-    margin: 8px 0;
+    padding: 11px 15px; font-size: 0.83rem;
+    color: #991b1b; line-height: 1.6; margin: 8px 0;
 }
 .success-box {
-    background: rgba(34,197,94,0.07);
-    border-left: 3px solid #22c55e;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 3px solid var(--accent-green);
     border-radius: 0 8px 8px 0;
-    padding: 12px 16px; font-size: 0.84rem;
-    color: #86efac; line-height: 1.6;
-    margin: 8px 0;
+    padding: 11px 15px; font-size: 0.83rem;
+    color: #14532d; line-height: 1.6; margin: 8px 0;
 }
 
-/* DiCE-specific styles */
+/* DiCE Section */
 .dice-section {
-    background: linear-gradient(135deg, #0a1220 0%, #0d1a2e 100%);
-    border: 1px solid #1e3a5f;
-    border-radius: 14px;
-    padding: 20px 22px;
-    margin-bottom: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
 }
 .dice-section h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.95rem; font-weight: 700;
-    color: #c9d9f0; margin: 0 0 14px;
-    letter-spacing: 0.02em;
+    font-family: var(--font-ui);
+    font-size: 0.88rem; font-weight: 700;
+    color: var(--text-primary); margin: 0 0 14px;
 }
 .dice-banner {
-    background: rgba(155,89,182,0.08);
-    border-left: 3px solid #9b59b6;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-left: 3px solid var(--accent-purple);
     border-radius: 0 8px 8px 0;
-    padding: 12px 16px; font-size: 0.84rem;
-    color: #d8b4fe; line-height: 1.6;
-    margin: 8px 0;
+    padding: 11px 15px; font-size: 0.83rem;
+    color: #4c1d95; line-height: 1.6; margin: 8px 0;
 }
-.cf-original { color: #ef4444; font-weight: 600; }
-.cf-target   { color: #22c55e; font-weight: 600; }
-.cf-arrow    { color: #6b8aad; font-weight: 600; }
-.shap-positive { color: #ef4444; font-weight: 600; }
-.shap-negative { color: #60a5fa; font-weight: 600; }
+.cf-original { color: var(--accent-red); font-weight: 600; }
+.cf-target   { color: var(--accent-green); font-weight: 600; }
+.cf-arrow    { color: var(--text-muted); font-weight: 600; }
+.shap-positive { color: var(--accent-red); font-weight: 600; }
+.shap-negative { color: var(--accent-blue); font-weight: 600; }
+
+/* NL Explanation Boxes */
 .nl-explain {
-    background: rgba(34,197,94,0.06);
-    border-left: 3px solid #22c55e;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 3px solid var(--accent-green);
     border-radius: 0 8px 8px 0;
-    padding: 14px 18px; font-size: 0.86rem;
-    line-height: 1.7; color: #c9d9f0;
-    margin: 8px 0;
+    padding: 14px 18px; font-size: 0.85rem;
+    line-height: 1.75; color: var(--text-primary); margin: 8px 0;
 }
 .nl-explain-risk {
-    background: rgba(239,68,68,0.06);
-    border-left: 3px solid #ef4444;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 3px solid var(--accent-red);
     border-radius: 0 8px 8px 0;
-    padding: 14px 18px; font-size: 0.86rem;
-    line-height: 1.7; color: #c9d9f0;
-    margin: 8px 0;
+    padding: 14px 18px; font-size: 0.85rem;
+    line-height: 1.75; color: var(--text-primary); margin: 8px 0;
 }
 
+/* Risk Badges */
 .risk-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: 'Syne', sans-serif; font-weight: 700;
-    font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 5px 14px; border-radius: 20px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font-ui); font-weight: 700;
+    font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 20px;
 }
-.risk-badge.high   { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-.risk-badge.medium { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
-.risk-badge.low    { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+.risk-badge.high   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.risk-badge.medium { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.risk-badge.low    { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
 
+/* Recommendation Cards */
 .rec-card {
-    background: #0d1625;
-    border: 1px solid #1a2d4a;
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin-bottom: 12px;
-    transition: border-color 0.2s;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px;
+    transition: box-shadow 0.15s, border-color 0.15s;
 }
-.rec-card:hover { border-color: #2a4a7a; }
+.rec-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-blue);
+}
 .rec-card .rec-header {
     display: flex; align-items: center; gap: 8px;
-    font-family: 'Syne', sans-serif; font-weight: 700;
-    font-size: 0.88rem; color: #c9d9f0; margin-bottom: 8px;
+    font-family: var(--font-ui); font-weight: 700;
+    font-size: 0.86rem; color: var(--text-primary); margin-bottom: 8px;
 }
 .rec-card .rec-icon {
     width: 28px; height: 28px; border-radius: 8px;
@@ -241,34 +480,28 @@ div[data-testid="stTabs"] > div:nth-child(2) { border-top: none !important; }
     font-size: 14px;
 }
 .rec-card ul { margin: 0; padding-left: 18px; }
-.rec-card ul li { font-size: 0.82rem; color: #6b8aad; line-height: 1.7; }
+.rec-card ul li { font-size: 0.81rem; color: var(--text-secondary); line-height: 1.75; }
 
+/* Chat Bubbles */
 .chat-user {
-    background: #1a2f50;
+    background: var(--accent-blue);
     border-radius: 14px 14px 4px 14px;
-    padding: 10px 14px; font-size: 0.88rem;
-    color: #d0e4ff; max-width: 78%;
+    padding: 10px 14px; font-size: 0.87rem;
+    color: #ffffff; max-width: 78%;
     margin-left: auto; margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.2);
 }
 .chat-bot {
-    background: #0d1625;
-    border: 1px solid #1a2d4a;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 14px 14px 14px 4px;
-    padding: 10px 14px; font-size: 0.88rem;
-    color: #93bbdf; max-width: 78%;
+    padding: 10px 14px; font-size: 0.87rem;
+    color: var(--text-primary); max-width: 78%;
     margin-bottom: 8px;
+    box-shadow: var(--shadow-sm);
 }
 
-div[data-testid="stSidebar"] label {
-    font-size: 0.8rem !important; color: #6b8aad !important;
-    font-weight: 500 !important;
-}
-div[data-testid="stSidebar"] h2, div[data-testid="stSidebar"] h3 {
-    font-family: 'Syne', sans-serif !important;
-    font-size: 0.85rem !important; color: #93bbdf !important;
-    text-transform: uppercase; letter-spacing: 0.06em;
-}
-
+/* Heartbeat animation */
 @keyframes heartbeat {
     0%, 100% { transform: scale(1); }
     14%       { transform: scale(1.3); }
@@ -277,7 +510,7 @@ div[data-testid="stSidebar"] h2, div[data-testid="stSidebar"] h3 {
     70%       { transform: scale(1); }
 }
 .beat { display: inline-block; animation: heartbeat 1.5s ease-in-out infinite; }
-.js-plotly-plot { background: transparent !important; }
+.js-plotly-plot .plotly { background: transparent !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -313,23 +546,23 @@ DICE_UNITS = {
 
 ACTION_MAP = {
     "trestbps": {
-        "icon": "💊", "bg": "rgba(239,68,68,0.12)", "title": "Blood Pressure",
+        "icon": "💊", "bg": "rgba(220,38,38,0.08)", "title": "Blood Pressure",
         "actions": ["Reduce salt intake to < 1500mg/day", "Daily 30-min cardio exercise", "Stress reduction & meditation", "Monitor BP twice daily"],
     },
     "chol": {
-        "icon": "🥗", "bg": "rgba(245,158,11,0.12)", "title": "Cholesterol",
+        "icon": "🥗", "bg": "rgba(217,119,6,0.08)", "title": "Cholesterol",
         "actions": ["Adopt a low-fat, high-fibre diet", "Increase omega-3 intake (fish, flaxseed)", "Reduce saturated & trans fats", "Consider plant sterols/stanols"],
     },
     "thalach": {
-        "icon": "🏃", "bg": "rgba(96,165,250,0.12)", "title": "Max Heart Rate",
-        "actions": ["Structured aerobic training 4×/week", "Zone 2 cardio (60-70% max HR)", "Gradual intensity progression", "Track heart rate during exercise"],
+        "icon": "🏃", "bg": "rgba(37,99,235,0.08)", "title": "Max Heart Rate",
+        "actions": ["Structured aerobic training 4x/week", "Zone 2 cardio (60-70% max HR)", "Gradual intensity progression", "Track heart rate during exercise"],
     },
     "oldpeak": {
-        "icon": "🧘", "bg": "rgba(167,139,250,0.12)", "title": "ST Depression",
+        "icon": "🧘", "bg": "rgba(124,58,237,0.08)", "title": "ST Depression",
         "actions": ["Yoga & breathing exercises", "Avoid intense exertion until reviewed", "Stress management therapy", "Consult cardiologist for ECG review"],
     },
     "disease_score": {
-        "icon": "🏥", "bg": "rgba(34,197,94,0.12)", "title": "Overall Disease Score",
+        "icon": "🏥", "bg": "rgba(5,150,105,0.08)", "title": "Overall Disease Score",
         "actions": ["Complete lifestyle overhaul", "Regular cardiac monitoring", "Medication adherence if prescribed", "Dietitian + exercise physiologist referral"],
     },
 }
@@ -410,11 +643,6 @@ def get_shap_explainer(_model, _background, _feature_cols):
 
 @st.cache_resource
 def get_dice_pipeline():
-    """
-    Build and cache the DiCE pipeline.
-    Trains a parallel Stack6 on raw (non-one-hot) features so DiCE can vary
-    cp/thal/slope as native values. Matches PART 5 of the AI-DWELL notebook.
-    """
     cols = ["age","sex","cp","trestbps","chol","fbs","restecg",
             "thalach","exang","oldpeak","slope","ca","thal","target"]
 
@@ -589,31 +817,31 @@ def get_recommendations(inputs: dict, rec: dict, prob: float) -> dict:
     }
 
 # ───────────────────────────────────────────────
-# CHART HELPERS
+# CHART HELPERS — light-theme Plotly
 # ───────────────────────────────────────────────
 PLOTLY_BASE = dict(
     paper_bgcolor='rgba(0,0,0,0)',
-    plot_bgcolor='rgba(13,22,37,0.7)',
-    font=dict(family='DM Sans', color='#6b8aad', size=11),
+    plot_bgcolor='rgba(245,247,251,0.8)',
+    font=dict(family='Plus Jakarta Sans', color='#4a607a', size=11),
     margin=dict(t=20, b=40, l=10, r=20),
 )
 
 def make_gauge(prob: float) -> go.Figure:
-    color = "#ef4444" if prob >= 0.6 else ("#f59e0b" if prob >= 0.35 else "#22c55e")
+    color = "#dc2626" if prob >= 0.6 else ("#d97706" if prob >= 0.35 else "#059669")
     label = "HIGH RISK" if prob >= 0.6 else ("MODERATE" if prob >= 0.35 else "LOW RISK")
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=round(prob * 100, 1),
-        number={'suffix': '%', 'font': {'size': 46, 'color': color, 'family': 'Syne'}},
-        title={'text': f"<b>{label}</b>", 'font': {'size': 16, 'color': color, 'family': 'Syne'}},
+        number={'suffix': '%', 'font': {'size': 44, 'color': color, 'family': 'Plus Jakarta Sans'}},
+        title={'text': f"<b>{label}</b>", 'font': {'size': 15, 'color': color, 'family': 'Plus Jakarta Sans'}},
         gauge={
-            'axis': {'range': [0, 100], 'tickfont': {'color': '#2a4a7a'}, 'tickwidth': 0},
+            'axis': {'range': [0, 100], 'tickfont': {'color': '#b8c5d6'}, 'tickwidth': 0},
             'bar': {'color': color, 'thickness': 0.25},
-            'bgcolor': '#0d1625', 'borderwidth': 0,
+            'bgcolor': '#f5f7fb', 'borderwidth': 0,
             'steps': [
-                {'range': [0, 35],   'color': 'rgba(34,197,94,0.1)'},
-                {'range': [35, 60],  'color': 'rgba(245,158,11,0.1)'},
-                {'range': [60, 100], 'color': 'rgba(239,68,68,0.1)'},
+                {'range': [0, 35],   'color': 'rgba(5,150,105,0.07)'},
+                {'range': [35, 60],  'color': 'rgba(217,119,6,0.07)'},
+                {'range': [60, 100], 'color': 'rgba(220,38,38,0.07)'},
             ],
             'threshold': {'line': {'color': color, 'width': 3}, 'thickness': 0.85, 'value': prob * 100}
         }
@@ -634,17 +862,17 @@ def make_risk_bars(inputs: dict) -> go.Figure:
     }
     labels = list(items.keys())
     vals   = [v * 100 for v in items.values()]
-    colors = ['#ef4444' if v >= 60 else ('#f59e0b' if v >= 35 else '#22c55e') for v in vals]
+    colors = ['#dc2626' if v >= 60 else ('#d97706' if v >= 35 else '#059669') for v in vals]
 
     fig = go.Figure(go.Bar(
         x=vals, y=labels, orientation='h',
-        marker=dict(color=colors, line=dict(width=0)),
+        marker=dict(color=colors, line=dict(width=0), opacity=0.78),
         text=[f"{v:.0f}%" for v in vals], textposition='outside',
-        textfont=dict(color='#4a6285', size=10),
+        textfont=dict(color='#7a95b0', size=10),
     ))
     fig.update_layout(
-        xaxis=dict(range=[0, 115], showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(tickfont=dict(color='#93bbdf', size=11), gridcolor='rgba(255,255,255,0.03)'),
+        xaxis=dict(range=[0, 118], showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(tickfont=dict(color='#1a2535', size=11), gridcolor='rgba(0,0,0,0.04)'),
         height=260, **PLOTLY_BASE,
     )
     return fig
@@ -659,20 +887,20 @@ def make_shap_chart(shap_vals: np.ndarray, feature_cols: list, X_row: pd.DataFra
         labels.append(f"{LABEL_MAP.get(col, col)} = {raw:.3g}")
         values.append(float(shap_vals[i]))
     labels  = labels[::-1]; values = values[::-1]
-    colors  = ['#ef4444' if v > 0 else '#60a5fa' for v in values]
+    colors  = ['#dc2626' if v > 0 else '#2563eb' for v in values]
 
     fig = go.Figure(go.Bar(
         x=values, y=labels, orientation='h',
-        marker=dict(color=colors, line=dict(width=0), opacity=0.85),
+        marker=dict(color=colors, line=dict(width=0), opacity=0.72),
         text=[f"{v:+.3f}" for v in values], textposition='outside',
-        textfont=dict(color='#4a6285', size=10),
+        textfont=dict(color='#7a95b0', size=10),
         hovertemplate='%{y}<br>SHAP: %{x:+.4f}<extra></extra>',
     ))
-    fig.add_vline(x=0, line_color='rgba(255,255,255,0.1)', line_width=1)
+    fig.add_vline(x=0, line_color='rgba(0,0,0,0.10)', line_width=1)
     fig.update_layout(
-        xaxis=dict(title=dict(text="SHAP impact on risk probability", font=dict(color='#4a6285', size=11)),
-                   tickfont=dict(color='#2a4a7a'), gridcolor='rgba(255,255,255,0.04)', zeroline=False),
-        yaxis=dict(tickfont=dict(color='#93bbdf', size=10), gridcolor='rgba(255,255,255,0.03)'),
+        xaxis=dict(title=dict(text="SHAP impact on risk probability", font=dict(color='#7a95b0', size=11)),
+                   tickfont=dict(color='#b8c5d6'), gridcolor='rgba(0,0,0,0.05)', zeroline=False),
+        yaxis=dict(tickfont=dict(color='#1a2535', size=10), gridcolor='rgba(0,0,0,0.04)'),
         height=400, **PLOTLY_BASE,
     )
     return fig
@@ -717,24 +945,24 @@ def make_dice_chart(query: pd.DataFrame, cf_df: pd.DataFrame,
         fig.add_annotation(
             text="No feature changes needed — patient already near the low-risk boundary.",
             x=0.5, y=0.5, xref='paper', yref='paper',
-            showarrow=False, font=dict(color='#6b8aad', size=13)
+            showarrow=False, font=dict(color='#7a95b0', size=13)
         )
         fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
                           xaxis=dict(visible=False), yaxis=dict(visible=False), height=260)
         return fig
 
     n_cfs      = len(cf_df)
-    cf_palette = ['#22c55e', '#60a5fa', '#a855f7']
+    cf_palette = ['#059669', '#2563eb', '#7c3aed']
     fig        = go.Figure()
 
     fig.add_trace(go.Bar(
         name='Current Patient (High Risk)',
         x=[DICE_LABELS.get(f, f) for f in changed],
         y=[float(original[f]) for f in changed],
-        marker=dict(color='#ef4444', line=dict(width=0), opacity=0.85),
+        marker=dict(color='#dc2626', line=dict(width=0), opacity=0.75),
         text=[f"{float(original[f]):.2f}" for f in changed],
         textposition='outside',
-        textfont=dict(color='#ef4444', size=10),
+        textfont=dict(color='#dc2626', size=10),
         hovertemplate='%{x}<br>Current: %{y:.2f}<extra></extra>',
     ))
     for i in range(n_cfs):
@@ -742,7 +970,7 @@ def make_dice_chart(query: pd.DataFrame, cf_df: pd.DataFrame,
             name=f'Counterfactual {i+1} (Low Risk)',
             x=[DICE_LABELS.get(f, f) for f in changed],
             y=[float(cf_df[f].iloc[i]) for f in changed],
-            marker=dict(color=cf_palette[i % len(cf_palette)], line=dict(width=0), opacity=0.85),
+            marker=dict(color=cf_palette[i % len(cf_palette)], line=dict(width=0), opacity=0.75),
             text=[f"{float(cf_df[f].iloc[i]):.2f}" for f in changed],
             textposition='outside',
             textfont=dict(color=cf_palette[i % len(cf_palette)], size=10),
@@ -751,9 +979,9 @@ def make_dice_chart(query: pd.DataFrame, cf_df: pd.DataFrame,
 
     fig.update_layout(
         barmode='group',
-        xaxis=dict(tickfont=dict(color='#93bbdf', size=11), gridcolor='rgba(255,255,255,0.03)'),
-        yaxis=dict(tickfont=dict(color='#4a6285', size=10), gridcolor='rgba(255,255,255,0.04)', zeroline=False),
-        legend=dict(font=dict(color='#6b8aad'), orientation='h', y=-0.22, x=0.5, xanchor='center'),
+        xaxis=dict(tickfont=dict(color='#1a2535', size=11), gridcolor='rgba(0,0,0,0.04)'),
+        yaxis=dict(tickfont=dict(color='#7a95b0', size=10), gridcolor='rgba(0,0,0,0.05)', zeroline=False),
+        legend=dict(font=dict(color='#4a607a'), orientation='h', y=-0.22, x=0.5, xanchor='center'),
         height=300, **PLOTLY_BASE,
     )
     return fig
@@ -789,7 +1017,7 @@ def dice_natural_language(query: pd.DataFrame, cf_df: pd.DataFrame, pred: int, p
                 f"<span class='cf-original'>{orig_v:.1f}{unit}</span> "
                 f"<span class='cf-arrow'>→</span> "
                 f"<span class='cf-target'>{cf_v:.1f}{unit}</span> "
-                f"<span style='color:#4a6285'>({arrow})</span><br>"
+                f"<span style='color:#8a9db5'>({arrow})</span><br>"
             )
         if not any_change:
             lines.append("&nbsp;&nbsp;<i>(no changes — near decision boundary)</i><br>")
@@ -808,21 +1036,21 @@ def make_rec_delta_chart(ranked_actions: list) -> go.Figure:
     fig = go.Figure()
     fig.add_trace(go.Bar(
         name='Your Values', x=labels, y=user_vals,
-        marker=dict(color='#ef4444', opacity=0.8, line=dict(width=0)),
+        marker=dict(color='#dc2626', opacity=0.75, line=dict(width=0)),
         text=[f"{v:.1f}" for v in user_vals], textposition='outside',
-        textfont=dict(color='#ef4444', size=10),
+        textfont=dict(color='#dc2626', size=10),
     ))
     fig.add_trace(go.Bar(
         name='Healthy Target', x=labels, y=target_vals,
-        marker=dict(color='#22c55e', opacity=0.8, line=dict(width=0)),
+        marker=dict(color='#059669', opacity=0.75, line=dict(width=0)),
         text=[f"{v:.1f}" for v in target_vals], textposition='outside',
-        textfont=dict(color='#22c55e', size=10),
+        textfont=dict(color='#059669', size=10),
     ))
     fig.update_layout(
         barmode='group',
-        xaxis=dict(tickfont=dict(color='#93bbdf', size=11), gridcolor='rgba(255,255,255,0.03)'),
-        yaxis=dict(tickfont=dict(color='#4a6285', size=10), gridcolor='rgba(255,255,255,0.04)', zeroline=False),
-        legend=dict(font=dict(color='#6b8aad'), orientation='h', y=-0.18, x=0.5, xanchor='center'),
+        xaxis=dict(tickfont=dict(color='#1a2535', size=11), gridcolor='rgba(0,0,0,0.04)'),
+        yaxis=dict(tickfont=dict(color='#7a95b0', size=10), gridcolor='rgba(0,0,0,0.05)', zeroline=False),
+        legend=dict(font=dict(color='#4a607a'), orientation='h', y=-0.18, x=0.5, xanchor='center'),
         height=280, **PLOTLY_BASE,
     )
     return fig
@@ -901,7 +1129,7 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    st.markdown(f'<div style="font-size:0.78rem;color:#4a6285;">Logged in as <b style="color:#93bbdf">{st.session_state.get("username","")}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="font-size:0.78rem;color:#7a95b0;">Logged in as <b style="color:#1a2535">{st.session_state.get("username","")}</b></div>', unsafe_allow_html=True)
     if st.button("🚪 Logout", use_container_width=True):
         st.session_state["authenticated"] = False
         st.session_state["username"] = ""
@@ -909,7 +1137,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown(
-        '<div style="font-size:0.72rem;color:#2a4a7a;line-height:1.6">'
+        '<div style="font-size:0.72rem;color:#8a9db5;line-height:1.6">'
         '⚕️ This tool is for educational purposes only. '
         'Always consult a qualified healthcare professional.</div>',
         unsafe_allow_html=True,
@@ -945,9 +1173,9 @@ chol_cls  = "success" if chol < 200 else ("warning" if chol < 240 else "danger")
 # ───────────────────────────────────────────────
 st.markdown(f"""
 <div class="hub-banner">
+  <div class="banner-badge">🏥 Cardiovascular Intelligence Platform</div>
   <h1><span class="beat">🫀</span> CVD Intelligence Hub</h1>
-  <p>“Predict. Prevent. Protect.”</p>
-  <p>Integrated cardiovascular risk prediction · SHAP explainability · DiCE counterfactuals · AI chatbot · personalised recommendations</p>
+  <p>Predict · Prevent · Protect &nbsp;·&nbsp; Integrated risk prediction · SHAP explainability · DiCE counterfactuals · AI chatbot · Personalised recommendations</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1002,7 +1230,6 @@ tab1, tab2, tab3 = st.tabs([
 # ══════════════════════════════════════════
 with tab1:
 
-    # ── Row 1: Gauge + Risk Bars ──
     g_col, b_col = st.columns([1, 1.7])
 
     with g_col:
@@ -1023,12 +1250,11 @@ with tab1:
         st.markdown('<div class="info-box">🔴 ≥ 60% High &nbsp;·&nbsp; 🟡 35–60% Moderate &nbsp;·&nbsp; 🟢 &lt; 35% Low</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── Row 2: SHAP ──
     st.markdown('<div class="sec-card"><h3>🔍 Explainable AI — SHAP Feature Impact</h3>', unsafe_allow_html=True)
     st.markdown('<div class="info-box">SHAP values show each feature\'s contribution to the prediction. '
-                '<span style="color:#ef4444;font-weight:600">Red = increases risk</span> &nbsp;|&nbsp; '
-                '<span style="color:#60a5fa;font-weight:600">Blue = decreases risk</span><br>'
-                '<span style="color:#4a6285;font-size:0.8rem">Method: TreeExplainer on LightGBM base learner (fast, exact)</span></div>',
+                '<span style="color:#dc2626;font-weight:600">Red = increases risk</span> &nbsp;|&nbsp; '
+                '<span style="color:#2563eb;font-weight:600">Blue = decreases risk</span><br>'
+                '<span style="color:#8a9db5;font-size:0.8rem">Method: TreeExplainer on LightGBM base learner (fast, exact)</span></div>',
                 unsafe_allow_html=True)
 
     if shap_bundle and X_input is not None:
@@ -1064,8 +1290,6 @@ with tab1:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-
-
     if not DICE_OK:
         st.markdown('<div class="warn-box">⚠️ DiCE engine not available. Ensure <code>processed.cleveland.data</code> is present and dependencies are installed.</div>',
                     unsafe_allow_html=True)
@@ -1079,7 +1303,6 @@ with tab1:
         </div>
         """, unsafe_allow_html=True)
     else:
-        # Check if DiCE's raw-feature model also flags this patient
         dice_query = build_dice_query(
             inputs,
             dice_bundle["feature_cols"],
@@ -1124,7 +1347,7 @@ with tab1:
                 <b>DiCE could not generate counterfactuals for this patient.</b><br>
                 The patient profile may be too deep inside the high-risk region for any
                 small change in the permitted features to flip the prediction.<br>
-                <span style="font-size:0.8rem;color:#4a6285">Last error: {cf_error}</span>
+                <span style="font-size:0.8rem;color:#8a9db5">Last error: {cf_error}</span>
                 </div>
                 """, unsafe_allow_html=True)
             else:
@@ -1138,8 +1361,8 @@ with tab1:
                     st.markdown("**Current Patient vs Counterfactual Targets**")
                     st.markdown(
                         '<div class="info-box" style="margin-bottom:10px">'
-                        '<span style="color:#ef4444;font-weight:600">Red = current values</span> &nbsp;|&nbsp; '
-                        '<span style="color:#22c55e;font-weight:600">Green/Blue/Purple = counterfactual targets</span><br>'
+                        '<span style="color:#dc2626;font-weight:600">Red = current values</span> &nbsp;|&nbsp; '
+                        '<span style="color:#059669;font-weight:600">Green/Blue/Purple = counterfactual targets</span><br>'
                         'Only features DiCE actually changed are shown.</div>',
                         unsafe_allow_html=True
                     )
@@ -1151,7 +1374,6 @@ with tab1:
                     dice_nl = dice_natural_language(dice_query, cf_df, pred, prob)
                     st.markdown(f'<div class="nl-explain-risk">{dice_nl}</div>', unsafe_allow_html=True)
 
-                # Full detail table
                 with st.expander("📋 Counterfactual Detail Table — Full Feature Values", expanded=False):
                     display_df = pd.concat(
                         [dice_query.reset_index(drop=True), cf_df.reset_index(drop=True)],
@@ -1162,7 +1384,6 @@ with tab1:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── Row 4: Clinical Summary ──
     st.markdown('<div class="sec-card"><h3>Clinical Summary</h3>', unsafe_allow_html=True)
     cs1, cs2, cs3 = st.columns(3)
 
@@ -1282,7 +1503,7 @@ with tab3:
             st.markdown('<div class="success-box">✅ Your values are close to the healthy patient profile. Maintain your current lifestyle!</div>', unsafe_allow_html=True)
         else:
             for i, action in enumerate(rec_result["ranked_actions"], 1):
-                status_color = "#ef4444" if action["status"] == "HIGH" else "#f59e0b"
+                status_color = "#dc2626" if action["status"] == "HIGH" else "#d97706"
                 delta_arrow  = "↓ needs reduction" if action["status"] == "HIGH" else "↑ needs improvement"
                 st.markdown(f"""
                 <div class="rec-card">
@@ -1331,22 +1552,25 @@ with tab3:
 
         st.markdown('<div class="sec-card"><h3>Risk Score Categorisation</h3>', unsafe_allow_html=True)
         risk_data = {
-            "Healthy (< 20%)":    "#22c55e",
-            "Low Risk (20–40%)":  "#60a5fa",
-            "Moderate (40–60%)":  "#f59e0b",
-            "High Risk (60–80%)": "#ef4444",
-            "Critical (> 80%)":   "#dc2626",
+            "Healthy (< 20%)":    "#059669",
+            "Low Risk (20–40%)":  "#2563eb",
+            "Moderate (40–60%)":  "#d97706",
+            "High Risk (60–80%)": "#dc2626",
+            "Critical (> 80%)":   "#991b1b",
         }
         active_idx = min(int(prob * 5), 4)
         for idx_r, (lbl, col) in enumerate(zip(risk_data.keys(), risk_data.values())):
             active = idx_r == active_idx
-            bg     = f"rgba({int(col[1:3],16)},{int(col[3:5],16)},{int(col[5:7],16)},{'0.18' if active else '0.05'})"
-            border = f"1px solid {col}" if active else "1px solid transparent"
+            r_int = int(col[1:3], 16)
+            g_int = int(col[3:5], 16)
+            b_int = int(col[5:7], 16)
+            bg     = f"rgba({r_int},{g_int},{b_int},{'0.12' if active else '0.04'})"
+            border = f"1px solid {col}" if active else f"1px solid rgba({r_int},{g_int},{b_int},0.2)"
             weight = "700" if active else "400"
             arrow  = " ◀ You are here" if active else ""
             st.markdown(f"""
             <div style="background:{bg};border:{border};border-radius:8px;
-                        padding:7px 14px;margin-bottom:6px;font-size:0.82rem;
+                        padding:8px 14px;margin-bottom:6px;font-size:0.82rem;
                         color:{col};font-weight:{weight}">
               {lbl}{arrow}
             </div>""", unsafe_allow_html=True)
