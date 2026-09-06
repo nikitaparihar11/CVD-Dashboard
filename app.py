@@ -31,8 +31,6 @@ from llm_engine import generate_response
 from voice_engine import transcribe_audio
 from lang_engine import detect_language
 
-from auth import require_auth
-
 # ───────────────────────────────────────────────
 # PAGE CONFIG
 # ───────────────────────────────────────────────
@@ -42,7 +40,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-require_auth()
+
 
 # ───────────────────────────────────────────────
 # GLOBAL CSS — SOFT BLUE-GREY LIGHT MEDICAL THEME
